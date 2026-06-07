@@ -47,6 +47,7 @@ router.get('/insight', authenticateToken, async (req, res) => {
     const insight = data.choices[0].message.content;
     res.json({ insight });
   } catch (err) {
+    console.log('OpenRouter error:', err.message);
     res.json({ insight: `Based on your interest in ${assets || 'crypto'}, the market looks promising today. Stay informed and invest wisely!` });
   }
 });
