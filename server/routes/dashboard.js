@@ -37,7 +37,7 @@ router.get('/insight', authenticateToken, async (req, res) => {
 
   try {
     const payload = {
-      model: 'mistralai/mistral-7b-instruct:free',
+      model: 'google/gemma-3-1b-it:free',
       messages: [
         {
           role: 'user',
