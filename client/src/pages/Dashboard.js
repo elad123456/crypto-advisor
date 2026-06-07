@@ -122,7 +122,7 @@ function Dashboard() {
 {/* AI insight section */}
         <h2 style={{ marginBottom: '16px', color: '#f7931a' }}>AI Insight of the Day</h2>
         <div style={{ ...cardStyle, marginBottom: '32px' }}>
-          <p style={{ lineHeight: '1.6', marginBottom: '16px' }}>{insight}</p>
+          <p style={{ lineHeight: '1.6', marginBottom: '16px' }} dangerouslySetInnerHTML={{ __html: insight.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />
           <button onClick={() => handleVote('insight', 'daily', 1)} style={voteButtonStyle}>👍</button>
           <button onClick={() => handleVote('insight', 'daily', -1)} style={voteButtonStyle}>👎</button>
         </div>
