@@ -1,20 +1,30 @@
+// useState - remember variables and change them
 import React, { useState } from 'react';
+// axios - server requires 
 import axios from 'axios';
+// useNavigate - navigate between the pages, Link - create a string for the navigation
 import { useNavigate, Link } from 'react-router-dom';
 
+
 function Register() {
+// state variables for name, email, password and error
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  // navigate - function to change the page
   const navigate = useNavigate();
 
+  // the function get an event , if successful move to onboarding, if not set error message
   const handleSubmit = async (e) => {
+    // prevent the refresh
     e.preventDefault();
     try {
+        // try to register the user and get the token and the user name
       const res = await axios.post('https://crypto-advisor-8bth.onrender.com/api/auth/register', { name, email, password });
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('user', JSON.stringify(res.data.user));
+      // move to onboarding
       navigate('/onboarding');
     } catch (err) {
       setError('Registration failed. Email may already exist.');
@@ -45,7 +55,7 @@ function Register() {
             {error}
           </p>
         )}
-
+        {/* Form for user registration + real-time validation */}
         <form onSubmit={handleSubmit}>
           <input
             type="text"
@@ -65,6 +75,7 @@ function Register() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
+          {/* submit on click */}
           <button type="submit" style={{
             width: '100%',
             padding: '14px',
@@ -78,6 +89,7 @@ function Register() {
           </button>
         </form>
 
+{/* link for login */}
         <p style={{ textAlign: 'center', marginTop: '20px', color: '#666' }}>
           Already have an account? <Link to="/login">Login</Link>
         </p>

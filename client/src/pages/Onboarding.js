@@ -1,17 +1,25 @@
+// useState - remember variables and change them
 import React, { useState } from 'react';
+// axios - server requires 
 import axios from 'axios';
+// useNavigate - navigate between the pages
 import { useNavigate } from 'react-router-dom';
 
+// Onboarding component
 function Onboarding() {
+// state variables for assets, investor type and content types
   const [assets, setAssets] = useState([]);
   const [investorType, setInvestorType] = useState('');
   const [contentTypes, setContentTypes] = useState([]);
+  // navigate - function to change the page
   const navigate = useNavigate();
 
+  // options for the onboarding questions
   const assetOptions = ['Bitcoin', 'Ethereum', 'Solana', 'BNB', 'XRP'];
   const investorOptions = ['HODLer', 'Day Trader', 'NFT Collector'];
   const contentOptions = ['Market News', 'Charts', 'Social', 'Fun'];
 
+  // after clicking on an item the function remove or add it to the list
   const toggleItem = (item, list, setList) => {
     if (list.includes(item)) {
       setList(list.filter(i => i !== item));
@@ -20,6 +28,7 @@ function Onboarding() {
     }
   };
 
+  // update the user preferences + move to dashboard
   const handleSubmit = async () => {
     const token = localStorage.getItem('token');
     try {
@@ -36,6 +45,7 @@ function Onboarding() {
     }
   };
 
+  // button style depending on selection
   const buttonStyle = (selected) => ({
     margin: '5px',
     padding: '10px 16px',
@@ -51,7 +61,8 @@ function Onboarding() {
       <div style={{ maxWidth: '600px', margin: '0 auto' }}>
         <h1 style={{ marginBottom: '8px' }}>₿ CryptoAdvisor</h1>
         <p style={{ color: '#666', marginBottom: '40px' }}>Tell us about yourself to personalize your dashboard</p>
-
+        
+        {/* Asset selection */}
         <div style={{ background: '#1a1a1a', padding: '24px', borderRadius: '16px', border: '1px solid #333', marginBottom: '20px' }}>
           <h3 style={{ marginBottom: '16px', color: '#f7931a' }}>Which crypto assets interest you?</h3>
           {assetOptions.map(asset => (
@@ -61,6 +72,7 @@ function Onboarding() {
           ))}
         </div>
 
+        {/* Investor type selection */}
         <div style={{ background: '#1a1a1a', padding: '24px', borderRadius: '16px', border: '1px solid #333', marginBottom: '20px' }}>
           <h3 style={{ marginBottom: '16px', color: '#f7931a' }}>What type of investor are you?</h3>
           {investorOptions.map(type => (
@@ -70,6 +82,7 @@ function Onboarding() {
           ))}
         </div>
 
+        {/* Content type selection */}
         <div style={{ background: '#1a1a1a', padding: '24px', borderRadius: '16px', border: '1px solid #333', marginBottom: '20px' }}>
           <h3 style={{ marginBottom: '16px', color: '#f7931a' }}>What content would you like to see?</h3>
           {contentOptions.map(content => (
@@ -79,6 +92,7 @@ function Onboarding() {
           ))}
         </div>
 
+{/* Submit button  + move to dashboard */}
         <button onClick={handleSubmit} style={{
           width: '100%',
           padding: '16px',
