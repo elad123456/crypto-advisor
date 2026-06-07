@@ -24,32 +24,68 @@ router.get('/news', authenticateToken, (req, res) => {
 });
 
 router.get('/insight', authenticateToken, async (req, res) => {
-    console.log('API KEY EXISTS:', !!process.env.OPENROUTER_API_KEY);
+  console.log('API KEY EXISTS:', !!process.env.OPENROUTER_API_KEY);
   const { assets, investor_type } = req.query;
+
+  if (!process.env.OPENROUTER_API_KEY) {
+    console.warn('OpenRouter API key missing - returning fallback insight.');
+    return res.json({
+      insight: `Fallback: Based on your interest in ${assets || 'crypto'}, keep a long-term view and diversify positions.`
+    });
+  }
+
   try {
+    const payload = {
+      model: 'meta-llama/llama-3.2-3b-instruct:free',
+      messages: [
+        {
+          role: 'user',
+          content: `You are a crypto advisor. Write a short 2-3 sentence insight for a ${investor_type || 'crypto investor'} who is interested in ${assets || 'Bitcoin'}. Be specific and helpful.`
+        }
+      ],
+      temperature: 0.7,
+      max_tokens: 150
+    };
+
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        model: 'meta-llama/llama-3.2-3b-instruct:free',
-        messages: [
-          {
-            role: 'user',
-            content: `You are a crypto advisor. Write a short 2-3 sentence insight for a ${investor_type || 'crypto investor'} who is interested in ${assets || 'Bitcoin'}. Be specific and helpful.`
-          }
-        ]
-      })
+      body: JSON.stringify(payload)
     });
-    const data = await response.json();
-    console.log('OpenRouter response:', JSON.stringify(data));
-    const insight = data.choices?.[0]?.message?.content || 'No insight available';
-    res.json({ insight });
+
+    if (!response.ok) {
+      const text = await response.text().catch(() => '<no body>');
+      console.error(`OpenRouter HTTP ${response.status}: ${text}`);
+      throw new Error(`OpenRouter HTTP ${response.status}`);
+    }
+
+    const data = await response.json().catch(() => null);
+    console.log('OpenRouter response:', JSON.stringify(data || {}));
+
+    const insight =
+      data?.choices?.[0]?.message?.content ||
+      data?.choices?.[0]?.text ||
+      data?.output?.[0] ||
+      data?.result?.[0]?.content ||
+      data?.message ||
+      (typeof data === 'string' ? data : null);
+
+    if (!insight) {
+      console.warn('No insight extracted from OpenRouter response - returning fallback.');
+      return res.json({
+        insight: `Fallback: Based on your interest in ${assets || 'crypto'}, keep diversified exposure and review risk management.`
+      });
+    }
+
+    res.json({ insight: insight.trim() });
   } catch (err) {
-    console.log('OpenRouter error:', err.message);
-    res.json({ insight: `Based on your interest in ${assets || 'crypto'}, the market looks promising today. Stay informed and invest wisely!` });
+    console.error('OpenRouter error:', err);
+    res.json({
+      insight: `Fallback: Based on your interest in ${assets || 'crypto'}, stay updated and manage risk carefully.`
+    });
   }
 });
 
