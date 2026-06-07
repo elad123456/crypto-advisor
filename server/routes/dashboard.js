@@ -37,7 +37,7 @@ router.get('/insight', authenticateToken, async (req, res) => {
 
   try {
     const payload = {
-      model: 'google/gemma-3-1b-it:free',
+      model: 'openai/gpt-oss-120b:free',
       messages: [
         {
           role: 'user',
