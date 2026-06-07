@@ -43,7 +43,8 @@ function Dashboard() {
       setPrices(Array.isArray(pricesRes.data) ? pricesRes.data.slice(0, 6) : []);
       setMeme(memeRes.data);
       setPreferences(prefsRes.data);
-      setInsight(`Based on your interest in ${prefsRes.data.assets || 'crypto'}, the market looks promising today. Stay informed and invest wisely!`);
+      const insightRes = await axios.get(`${API}/api/dashboard/insight?assets=${prefsRes.data.assets || 'Bitcoin'}&investor_type=${prefsRes.data.investor_type || 'investor'}`, { headers });
+      setInsight(insightRes.data.insight);
     } catch (err) {
       console.log(err);
     }
