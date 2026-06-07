@@ -24,6 +24,7 @@ router.get('/news', authenticateToken, (req, res) => {
 });
 
 router.get('/insight', authenticateToken, async (req, res) => {
+    console.log('API KEY EXISTS:', !!process.env.OPENROUTER_API_KEY);
   const { assets, investor_type } = req.query;
   try {
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
