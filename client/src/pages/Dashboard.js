@@ -9,6 +9,7 @@ function Dashboard() {
   const [meme, setMeme] = useState(null);
   const [preferences, setPreferences] = useState(null);
   const [insight, setInsight] = useState('');
+  const [news, setNews] = useState([]);
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
   const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -22,14 +23,16 @@ function Dashboard() {
   const fetchData = async () => {
     try {
       const headers = { Authorization: `Bearer ${token}` };
-      const [pricesRes, memeRes, prefsRes] = await Promise.all([
+      const [pricesRes, memeRes, prefsRes, newsRes] = await Promise.all([
         axios.get(`${API}/api/dashboard/prices`, { headers }),
         axios.get(`${API}/api/dashboard/meme`, { headers }),
-        axios.get(`${API}/api/preferences`, { headers })
+        axios.get(`${API}/api/preferences`, { headers }),
+        axios.get(`${API}/api/dashboard/news`, { headers })
       ]);
       setPrices(Array.isArray(pricesRes.data) ? pricesRes.data.slice(0, 6) : []);
       setMeme(memeRes.data);
       setPreferences(prefsRes.data);
+      setNews(newsRes.data);
       setInsight(`Based on your interest in ${prefsRes.data.assets || 'crypto'}, the market looks promising today. Stay informed and invest wisely!`);
     } catch (err) {
       console.log(err);
@@ -83,6 +86,22 @@ function Dashboard() {
           Welcome back, <span style={{ color: '#f7931a' }}>{user.name}</span>!
           {preferences && ` | ${preferences.investor_type} | Interests: ${preferences.assets}`}
         </p>
+
+        <h2 style={{ marginBottom: '16px', color: '#f7931a' }}>Market News</h2>
+        <div style={{ marginBottom: '32px' }}>
+          {news.map(item => (
+            <div key={item.id} style={{ ...cardStyle, marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <p style={{ fontWeight: 'bold', marginBottom: '4px' }}>{item.title}</p>
+                <p style={{ color: '#666', fontSize: '12px' }}>{item.source}</p>
+              </div>
+              <div style={{ display: 'flex', gap: '8px', marginLeft: '16px' }}>
+                <button onClick={() => handleVote('news', String(item.id), 1)} style={voteButtonStyle}>👍</button>
+                <button onClick={() => handleVote('news', String(item.id), -1)} style={voteButtonStyle}>👎</button>
+              </div>
+            </div>
+          ))}
+        </div>
 
         <h2 style={{ marginBottom: '16px', color: '#f7931a' }}>Coin Prices</h2>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '32px' }}>
