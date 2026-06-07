@@ -44,7 +44,8 @@ router.get('/insight', authenticateToken, async (req, res) => {
       })
     });
     const data = await response.json();
-    const insight = data.choices[0].message.content;
+    console.log('OpenRouter response:', JSON.stringify(data));
+    const insight = data.choices?.[0]?.message?.content || 'No insight available';
     res.json({ insight });
   } catch (err) {
     console.log('OpenRouter error:', err.message);
