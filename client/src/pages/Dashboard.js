@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
+const API = 'https://crypto-advisor-8bth.onrender.com';
+
 function Dashboard() {
   const [prices, setPrices] = useState([]);
   const [meme, setMeme] = useState(null);
@@ -12,24 +14,19 @@ function Dashboard() {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   useEffect(() => {
-    if (!token) {
-      navigate('/login');
-      return;
-    }
+    if (!token) { navigate('/login'); return; }
     fetchData();
- // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchData = async () => {
     try {
       const headers = { Authorization: `Bearer ${token}` };
-
       const [pricesRes, memeRes, prefsRes] = await Promise.all([
-        axios.get('https://crypto-advisor-8bth.onrender.com/api/dashboard/prices', { headers }),
-        axios.get('https://crypto-advisor-8bth.onrender.com/api/dashboard/meme', { headers }),
-        axios.get('https://crypto-advisor-8bth.onrender.com/api/preferences', { headers })
+        axios.get(`${API}/api/dashboard/prices`, { headers }),
+        axios.get(`${API}/api/dashboard/meme`, { headers }),
+        axios.get(`${API}/api/preferences`, { headers })
       ]);
-
       setPrices(Array.isArray(pricesRes.data) ? pricesRes.data.slice(0, 6) : []);
       setMeme(memeRes.data);
       setPreferences(prefsRes.data);
@@ -41,7 +38,7 @@ function Dashboard() {
 
   const handleVote = async (section, itemId, vote) => {
     try {
-      await axios.post('https://crypto-advisor-8bth.onrender.com/api/votes', { section, item_id: itemId, vote }, {
+      await axios.post(`${API}/api/votes`, { section, item_id: itemId, vote }, {
         headers: { Authorization: `Bearer ${token}` }
       });
     } catch (err) {
@@ -55,52 +52,75 @@ function Dashboard() {
     navigate('/login');
   };
 
+  const cardStyle = {
+    background: '#1a1a1a',
+    border: '1px solid #333',
+    borderRadius: '12px',
+    padding: '20px'
+  };
+
+  const voteButtonStyle = {
+    background: '#2a2a2a',
+    color: '#fff',
+    padding: '6px 12px',
+    borderRadius: '6px',
+    marginRight: '8px',
+    border: '1px solid #333'
+  };
+
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto', padding: '20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1>Welcome, {user.name}!</h1>
-        <button onClick={handleLogout}>Logout</button>
-      </div>
+    <div style={{ background: '#0f0f0f', minHeight: '100vh', padding: '20px' }}>
+      <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
 
-      {preferences && (
-        <p style={{ color: 'gray' }}>
-          Your interests: {preferences.assets} | Type: {preferences.investor_type}
-        </p>
-      )}
-
-      <h2>Coin Prices</h2>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-        {prices.map(coin => (
-          <div key={coin.id} style={{ border: '1px solid #ddd', padding: '15px', borderRadius: '8px', width: '140px' }}>
-            <img src={coin.image} alt={coin.name} style={{ width: '30px' }} />
-            <p><strong>{coin.name}</strong></p>
-            <p>${coin.current_price.toLocaleString()}</p>
-            <p style={{ color: coin.price_change_percentage_24h > 0 ? 'green' : 'red' }}>
-              {coin.price_change_percentage_24h.toFixed(2)}%
-            </p>
-            <button onClick={() => handleVote('prices', coin.id, 1)}>👍</button>
-            <button onClick={() => handleVote('prices', coin.id, -1)}>👎</button>
-          </div>
-        ))}
-      </div>
-
-      <h2>AI Insight of the Day</h2>
-      <div style={{ border: '1px solid #ddd', padding: '20px', borderRadius: '8px' }}>
-        <p>{insight}</p>
-        <button onClick={() => handleVote('insight', 'daily', 1)}>👍</button>
-        <button onClick={() => handleVote('insight', 'daily', -1)}>👎</button>
-      </div>
-
-      <h2>Fun Crypto Meme</h2>
-      {meme && (
-        <div style={{ border: '1px solid #ddd', padding: '20px', borderRadius: '8px' }}>
-          <p>{meme.title}</p>
-          <img src={meme.url} alt={meme.title} style={{ maxWidth: '300px' }} />
-          <br />
-          <button onClick={() => handleVote('meme', String(meme.id), 1)}>👍</button>
-          <button onClick={() => handleVote('meme', String(meme.id), -1)}>👎</button>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <h1 style={{ fontSize: '24px' }}>₿ CryptoAdvisor</h1>
+          <button onClick={handleLogout} style={{ background: '#2a2a2a', color: '#fff', border: '1px solid #333' }}>
+            Logout
+          </button>
         </div>
-      )}
+
+        <p style={{ color: '#666', marginBottom: '32px' }}>
+          Welcome back, <span style={{ color: '#f7931a' }}>{user.name}</span>!
+          {preferences && ` | ${preferences.investor_type} | Interests: ${preferences.assets}`}
+        </p>
+
+        <h2 style={{ marginBottom: '16px', color: '#f7931a' }}>Coin Prices</h2>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '32px' }}>
+          {prices.map(coin => (
+            <div key={coin.id} style={{ ...cardStyle, width: '150px' }}>
+              <img src={coin.image} alt={coin.name} style={{ width: '32px', marginBottom: '8px' }} />
+              <p style={{ fontWeight: 'bold', marginBottom: '4px' }}>{coin.name}</p>
+              <p style={{ fontSize: '18px', marginBottom: '4px' }}>${coin.current_price.toLocaleString()}</p>
+              <p style={{ color: coin.price_change_percentage_24h > 0 ? '#00ff88' : '#ff4444', marginBottom: '12px' }}>
+                {coin.price_change_percentage_24h.toFixed(2)}%
+              </p>
+              <div>
+                <button onClick={() => handleVote('prices', coin.id, 1)} style={voteButtonStyle}>👍</button>
+                <button onClick={() => handleVote('prices', coin.id, -1)} style={voteButtonStyle}>👎</button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <h2 style={{ marginBottom: '16px', color: '#f7931a' }}>AI Insight of the Day</h2>
+        <div style={{ ...cardStyle, marginBottom: '32px' }}>
+          <p style={{ lineHeight: '1.6', marginBottom: '16px' }}>{insight}</p>
+          <button onClick={() => handleVote('insight', 'daily', 1)} style={voteButtonStyle}>👍</button>
+          <button onClick={() => handleVote('insight', 'daily', -1)} style={voteButtonStyle}>👎</button>
+        </div>
+
+        <h2 style={{ marginBottom: '16px', color: '#f7931a' }}>Fun Crypto Meme</h2>
+        {meme && (
+          <div style={{ ...cardStyle, marginBottom: '32px' }}>
+            <p style={{ marginBottom: '12px', fontWeight: 'bold' }}>{meme.title}</p>
+            <img src={meme.url} alt={meme.title} style={{ maxWidth: '300px', borderRadius: '8px', marginBottom: '16px' }} />
+            <br />
+            <button onClick={() => handleVote('meme', String(meme.id), 1)} style={voteButtonStyle}>👍</button>
+            <button onClick={() => handleVote('meme', String(meme.id), -1)} style={voteButtonStyle}>👎</button>
+          </div>
+        )}
+
+      </div>
     </div>
   );
 }

@@ -21,31 +21,60 @@ function Login() {
   };
 
   return (
-    <div style={{ maxWidth: '400px', margin: '100px auto', padding: '20px' }}>
-      <h2>Login</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <form onSubmit={handleSubmit}>
-        <div>
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: '#0f0f0f'
+    }}>
+      <div style={{
+        background: '#1a1a1a',
+        padding: '40px',
+        borderRadius: '16px',
+        width: '100%',
+        maxWidth: '400px',
+        border: '1px solid #333'
+      }}>
+        <h1 style={{ marginBottom: '8px', fontSize: '28px' }}>₿ CryptoAdvisor</h1>
+        <p style={{ color: '#666', marginBottom: '32px' }}>Welcome back</p>
+
+        {error && (
+          <p style={{ color: '#ff4444', marginBottom: '16px', background: '#2a1a1a', padding: '10px', borderRadius: '8px' }}>
+            {error}
+          </p>
+        )}
+
+        <form onSubmit={handleSubmit}>
           <input
             type="email"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
           />
-        </div>
-        <div>
           <input
             type="password"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            style={{ width: '100%', padding: '10px', marginBottom: '10px' }}
           />
-        </div>
-        <button type="submit" style={{ width: '100%', padding: '10px' }}>Login</button>
-      </form>
-      <p>No account? <Link to="/register">Register</Link></p>
+          <button type="submit" style={{
+            width: '100%',
+            padding: '14px',
+            background: '#f7931a',
+            color: '#000',
+            fontWeight: 'bold',
+            fontSize: '16px',
+            borderRadius: '8px'
+          }}>
+            Login
+          </button>
+        </form>
+
+        <p style={{ textAlign: 'center', marginTop: '20px', color: '#666' }}>
+          No account? <Link to="/register">Register</Link>
+        </p>
+      </div>
     </div>
   );
 }
