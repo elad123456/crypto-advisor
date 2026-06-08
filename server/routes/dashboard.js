@@ -81,7 +81,7 @@ router.get('/insight', authenticateToken, async (req, res) => {
       });
     }
 
-    res.json({ insight: insight.trim().replace(/\*\*/g, '') });
+    res.json({ insight: insight.trim().replace(/\*+\*/g, '').replace(/^Insight:\s*/i, '') });
   } catch (err) {
     console.error('OpenRouter error:', err);
     res.json({
