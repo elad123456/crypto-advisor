@@ -1,7 +1,10 @@
+// Library for working with SQL
 const Database = require('better-sqlite3');
 
+// Initialize the database
 const db = new Database('crypto.db');
 
+// creating tables
 db.exec(`
   CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -31,4 +34,5 @@ db.exec(`
   );
 `);
 
+// publish the database object
 module.exports = db;
