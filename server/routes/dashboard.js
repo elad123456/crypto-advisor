@@ -10,7 +10,7 @@ const router = express.Router();
 router.get('/prices', authenticateToken, async (req, res) => {
   try {
     // top 10 cryptocurrencies by market cap
-    const response = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1');
+    const response = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin,ethereum,solana,binancecoin,ripple,usd-coin&order=market_cap_desc');
     // if the response is not ok, throw an error
     if (!response.ok) {
       throw new Error('Failed to fetch prices');
