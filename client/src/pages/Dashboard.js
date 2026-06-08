@@ -16,6 +16,7 @@ function Dashboard() {
   const [meme, setMeme] = useState(null);
   const [preferences, setPreferences] = useState(null);
   const [insight, setInsight] = useState('');
+  const [news, setNews] = useState([]);
   const navigate = useNavigate();
   // Get the token and user information from local storage
   const token = localStorage.getItem('token');
@@ -34,15 +35,16 @@ function Dashboard() {
       // Set the headers for the API requests
       const headers = { Authorization: `Bearer ${token}` };
       // 3 API calls performed in parallel
-      const [pricesRes, memeRes, prefsRes] = await Promise.all([
-        axios.get(`${API}/api/dashboard/prices`, { headers }),
-        axios.get(`${API}/api/dashboard/meme`, { headers }),
-        axios.get(`${API}/api/preferences`, { headers })
-      ]);
-      // set the state with the fetched data
-      setPrices(Array.isArray(pricesRes.data) ? pricesRes.data.slice(0, 6) : []);
-      setMeme(memeRes.data);
-      setPreferences(prefsRes.data);
+      const [pricesRes, memeRes, prefsRes, newsRes] = await Promise.all([
+    axios.get(`${API}/api/dashboard/prices`, { headers }),
+    axios.get(`${API}/api/dashboard/meme`, { headers }),
+    axios.get(`${API}/api/preferences`, { headers }),
+    axios.get(`${API}/api/dashboard/news`, { headers })
+        ]);
+    setPrices(Array.isArray(pricesRes.data) ? pricesRes.data.slice(0, 6) : []);
+    setMeme(memeRes.data);
+    setPreferences(prefsRes.data);
+    setNews(newsRes.data);
       const insightRes = await axios.get(`${API}/api/dashboard/insight?assets=${prefsRes.data.assets || 'Bitcoin'}&investor_type=${prefsRes.data.investor_type || 'investor'}`, { headers });
       setInsight(insightRes.data.insight);
     } catch (err) {
@@ -99,7 +101,22 @@ function Dashboard() {
           Welcome back, <span style={{ color: '#f7931a' }}>{user.name}</span>!
           {preferences && ` | ${preferences.investor_type} | Interests: ${preferences.assets}`}
         </p>
-
+{/* Market News Section */}
+        <h2 style={{ marginBottom: '16px', color: '#f7931a' }}>Market News</h2>
+<div style={{ marginBottom: '32px' }}>
+  {news.map(item => (
+    <div key={item.id} style={{ ...cardStyle, marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div>
+        <p style={{ fontWeight: 'bold', marginBottom: '4px' }}>{item.title}</p>
+        <p style={{ color: '#666', fontSize: '12px' }}>{item.source}</p>
+      </div>
+      <div style={{ display: 'flex', gap: '8px', marginLeft: '16px' }}>
+        <button onClick={() => handleVote('news', String(item.id), 1)} style={voteButtonStyle}>👍</button>
+        <button onClick={() => handleVote('news', String(item.id), -1)} style={voteButtonStyle}>👎</button>
+      </div>
+    </div>
+  ))}
+</div>
 {/* Coin prices section */}
         <h2 style={{ marginBottom: '16px', color: '#f7931a' }}>Coin Prices</h2>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '32px' }}>
