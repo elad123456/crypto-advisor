@@ -17,6 +17,7 @@ function Dashboard() {
   const [preferences, setPreferences] = useState(null);
   const [insight, setInsight] = useState('');
   const [news, setNews] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   // Get the token and user information from local storage
   const token = localStorage.getItem('token');
@@ -32,25 +33,29 @@ function Dashboard() {
   // function to fetch data from the server
   const fetchData = async () => {
     try {
+      setLoading(true);
       // Set the headers for the API requests
       const headers = { Authorization: `Bearer ${token}` };
-      // 3 API calls performed in parallel
+      // 4 API calls performed in parallel
       const [pricesRes, memeRes, prefsRes, newsRes] = await Promise.all([
-    axios.get(`${API}/api/dashboard/prices`, { headers }),
-    axios.get(`${API}/api/dashboard/meme`, { headers }),
-    axios.get(`${API}/api/preferences`, { headers }),
-    axios.get(`${API}/api/dashboard/news`, { headers })
-        ]);
-    setPrices(Array.isArray(pricesRes.data) ? pricesRes.data.slice(0, 6) : []);
-    setMeme(memeRes.data);
-    setPreferences(prefsRes.data);
-    setNews(newsRes.data);
+        axios.get(`${API}/api/dashboard/prices`, { headers }),
+        axios.get(`${API}/api/dashboard/meme`, { headers }),
+        axios.get(`${API}/api/preferences`, { headers }),
+        axios.get(`${API}/api/dashboard/news`, { headers })
+      ]);
+      setPrices(Array.isArray(pricesRes.data) ? pricesRes.data.slice(0, 6) : []);
+      setMeme(memeRes.data);
+      setPreferences(prefsRes.data);
+      setNews(newsRes.data);
       const insightRes = await axios.get(`${API}/api/dashboard/insight?assets=${prefsRes.data.assets || 'Bitcoin'}&investor_type=${prefsRes.data.investor_type || 'investor'}`, { headers });
       setInsight(insightRes.data.insight);
+      setLoading(false);
     } catch (err) {
       console.log(err);
+      setLoading(false);
     }
   };
+
   // handle voting for a specific item
   const handleVote = async (section, itemId, vote) => {
     try {
@@ -61,12 +66,14 @@ function Dashboard() {
       console.log(err);
     }
   };
+
   // remove user data and token from local storage
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     navigate('/login');
   };
+
   // CSS styles for the dashboard components
   const cardStyle = {
     background: '#1a1a1a',
@@ -75,7 +82,7 @@ function Dashboard() {
     padding: '20px'
   };
 
-    // CSS styles for the dashboard components
+  // CSS styles for the vote buttons
   const voteButtonStyle = {
     background: '#2a2a2a',
     color: '#fff',
@@ -84,6 +91,18 @@ function Dashboard() {
     marginRight: '8px',
     border: '1px solid #333'
   };
+
+  // show loading screen while fetching data
+  if (loading) {
+    return (
+      <div style={{ background: '#0f0f0f', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center' }}>
+          <p style={{ fontSize: '48px' }}>₿</p>
+          <p style={{ color: '#f7931a', fontSize: '18px' }}>Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ background: '#0f0f0f', minHeight: '100vh', padding: '20px' }}>
@@ -96,28 +115,30 @@ function Dashboard() {
           </button>
         </div>
 
-{/* User name, preferences and interests */}
+        {/* User name, preferences and interests */}
         <p style={{ color: '#666', marginBottom: '32px' }}>
           Welcome back, <span style={{ color: '#f7931a' }}>{user.name}</span>!
           {preferences && ` | ${preferences.investor_type} | Interests: ${preferences.assets}`}
         </p>
-{/* Market News Section */}
+
+        {/* Market News Section */}
         <h2 style={{ marginBottom: '16px', color: '#f7931a' }}>Market News</h2>
-<div style={{ marginBottom: '32px' }}>
-  {news.map(item => (
-    <div key={item.id} style={{ ...cardStyle, marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <div>
-        <p style={{ fontWeight: 'bold', marginBottom: '4px' }}>{item.title}</p>
-        <p style={{ color: '#666', fontSize: '12px' }}>{item.source}</p>
-      </div>
-      <div style={{ display: 'flex', gap: '8px', marginLeft: '16px' }}>
-        <button onClick={() => handleVote('news', String(item.id), 1)} style={voteButtonStyle}>👍</button>
-        <button onClick={() => handleVote('news', String(item.id), -1)} style={voteButtonStyle}>👎</button>
-      </div>
-    </div>
-  ))}
-</div>
-{/* Coin prices section */}
+        <div style={{ marginBottom: '32px' }}>
+          {news.map(item => (
+            <div key={item.id} style={{ ...cardStyle, marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <p style={{ fontWeight: 'bold', marginBottom: '4px' }}>{item.title}</p>
+                <p style={{ color: '#666', fontSize: '12px' }}>{item.source}</p>
+              </div>
+              <div style={{ display: 'flex', gap: '8px', marginLeft: '16px' }}>
+                <button onClick={() => handleVote('news', String(item.id), 1)} style={voteButtonStyle}>👍</button>
+                <button onClick={() => handleVote('news', String(item.id), -1)} style={voteButtonStyle}>👎</button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Coin prices section */}
         <h2 style={{ marginBottom: '16px', color: '#f7931a' }}>Coin Prices</h2>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '32px' }}>
           {prices.map(coin => (
@@ -136,7 +157,8 @@ function Dashboard() {
             </div>
           ))}
         </div>
-{/* AI insight section */}
+
+        {/* AI insight section */}
         <h2 style={{ marginBottom: '16px', color: '#f7931a' }}>AI Insight of the Day</h2>
         <div style={{ ...cardStyle, marginBottom: '32px' }}>
           <p style={{ lineHeight: '1.6', marginBottom: '16px' }} dangerouslySetInnerHTML={{ __html: insight.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />
@@ -144,7 +166,7 @@ function Dashboard() {
           <button onClick={() => handleVote('insight', 'daily', -1)} style={voteButtonStyle}>👎</button>
         </div>
 
-{/* Fun Crypto Meme section */}
+        {/* Fun Crypto Meme section */}
         <h2 style={{ marginBottom: '16px', color: '#f7931a' }}>Fun Crypto Meme</h2>
         {meme && (
           <div style={{ ...cardStyle, marginBottom: '32px' }}>
